@@ -64,7 +64,7 @@ let rec solveur_split clauses interpretation =
   (* branchement *) 
   let l = hd (hd clauses) in
   ou (solveur_split (simplifie l clauses) (l::interpretation))
-     (solveur_split (simplifie (-l) clauses) ((-l)::interpretation))   
+     (solveur_split (simplifie (-l) clauses) ((-l)::interpretation))
 
 (* tests *)
 (* let () = print_modele (solveur_split accessibilite []) *)
@@ -92,10 +92,15 @@ let rec unitaire clauses =
       ce littéral ;
     - sinon, lève une exception `Failure "pas de littéral pur"' *)
 
-let eq_first a b = 
+(* Fonction vérifiant l'égalité d'un in avec le premier élément d'un couples. *)
+
+let eq a b =  
   match (a,b) with 
-    | ((n,_),(u,_)) -> (u = n)
+    | (a, (n,_)) -> (a = n)
 ;;
+
+(* Fonction renvoyant le premier élément d'une liste de couple (int * bool)
+où le bool est true *)
 
 let rec first l = 
   match l with
@@ -106,10 +111,10 @@ let rec first l =
 let rec aux_aux_pur clause accu =
   match clause with
   | [] -> accu
-  | a :: tl -> 
-    if List.exists (fun (n, b) -> (eq_first a (n, b)) || (eq_first a (-n, b))) accu
+  | a :: tl ->
+    if List.exists (fun (n, b) -> (eq a (n, b)) || (eq a (-n, b))) accu
     then aux_aux_pur tl (List.map (fun (n, b) -> if n = -a then (n, false) else (n, b)) accu)
-    else aux_aux_pur tl ((a,true)::accu)
+    else aux_aux_pur tl ((a, true) :: accu)
 ;;
 
 let rec aux_pur clauses accu = 
