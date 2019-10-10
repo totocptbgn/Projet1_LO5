@@ -1,12 +1,14 @@
 open List
 
 (* fonctions utilitaires *********************************************)
+
 (* filter_map : ('a -> 'b option) -> 'a list -> 'b list
    disponible depuis la version 4.08.0 de OCaml dans le module List :
    pour chaque élément de `list', appliquer `filter' :
    - si le résultat est `Some e', ajouter `e' au résultat ;
    - si le résultat est `None', ne rien ajouter au résultat.
    Attention, cette implémentation inverse l'ordre de la liste *)
+
 let filter_map filter list =
   let rec aux list ret =
     match list with
@@ -46,12 +48,14 @@ let coloriage = [[1;2;3];[4;5;6];[7;8;9];[10;11;12];[13;14;15];[16;17;18];[19;20
 (* simplifie : int -> int list list -> int list list 
    applique la simplification de l'ensemble des clauses en mettant
    le littéral i à vrai *)
+
 let simplifie i clauses =
   (* à compléter *)
   []
 
 (* solveur_split : int list list -> int list -> int list option
    exemple d'utilisation de `simplifie' *)
+
 let rec solveur_split clauses interpretation =
   (* l'ensemble vide de clauses est satisfiable *)
   if clauses = [] then Some interpretation else
@@ -74,7 +78,7 @@ let rec solveur_split clauses interpretation =
       le littéral de cette clause unitaire ;
     - sinon, lève une exception `Not_found' *)
 
-let unitaire clauses =
+let rec unitaire clauses =
   match clauses with
   | [] -> Failure "Not_found"
   | a :: tl -> 
@@ -90,31 +94,33 @@ let unitaire clauses =
 
 let eq_first a b = 
   match (a,b) with 
-    | ((x,_),(u,_)) -> u = v
+    | ((n,_),(u,_)) -> (u = n)
 ;;
 
-let first l = 
+let rec first l = 
   match l with
   | [] -> Failure "pas de littéral pur"
   | (e, b) :: l -> if b then e else first l
 ;;
 
-let aux_aux_pur clause accu =
+let rec aux_aux_pur clause accu =
   match clause with
   | [] -> accu
-  | a :: b -> 
-  if List.exists (fun (x,y) -> (eq_first a (x,y)) || (eq_first a (-x,y))) accu
-  then aux_aux_pur b (List.map (fun (x,y) -> if x = -a then (x,false) else (x,y)) accu)
-  else aux_aux_pur b ((a,true)::accu)
+  | a :: tl -> 
+    if List.exists (fun (n, b) -> (eq_first a (n, b)) || (eq_first a (-n, b))) accu
+    then aux_aux_pur tl (List.map (fun (n, b) -> if n = -a then (n, false) else (n, b)) accu)
+    else aux_aux_pur tl ((a,true)::accu)
 ;;
 
-let aux_pur clauses accu = 
+let rec aux_pur clauses accu = 
   match clauses with
   | [] -> first accu 
   | a :: b -> aux_pur b (aux_aux_pur a accu)
 ;;
 
-let pur clauses = aux_pur clauses [];;
+let pur clauses =
+  aux_pur clauses []
+;;
   
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 
