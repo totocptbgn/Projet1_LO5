@@ -123,11 +123,11 @@ let rec aux_pur clauses accu =
   match clauses with
   | [] -> let res = first accu in
 	if res=0 
-	then failwith "pas de littéral pur"
+	then raise(Failure "pas de littéral pur")
 	else res
   | a :: b -> aux_pur b (aux_aux_pur a accu)
 ;;
-*)
+
 let pur clauses =(*
   aux_pur clauses []
   *)
