@@ -93,6 +93,7 @@ let rec unitaire clauses =
     - sinon, lève une exception `Failure "pas de littéral pur"' *)
 
 (* Fonction vérifiant l'égalité d'un in avec le premier élément d'un couples. *)
+(* Deprecated *)
 
 let eq a b =  
   match (a,b) with 
@@ -102,9 +103,10 @@ let eq a b =
 (* Fonction renvoyant le premier élément d'une liste de couple (int * bool)
 où le bool est true *)
 
+
 let rec first l = 
   match l with
-  | [] -> Failure "pas de littéral pur"
+  | [] -> 0
   | (e, b) :: l -> if b then e else first l
 ;;
 
@@ -112,19 +114,24 @@ let rec aux_aux_pur clause accu =
   match clause with
   | [] -> accu
   | a :: tl ->
-    if List.exists (fun (n, b) -> (eq a (n, b)) || (eq a (-n, b))) accu
+    if List.exists (fun (n, b) -> a=n || a=(-n)) accu
     then aux_aux_pur tl (List.map (fun (n, b) -> if n = -a then (n, false) else (n, b)) accu)
     else aux_aux_pur tl ((a, true) :: accu)
 ;;
 
 let rec aux_pur clauses accu = 
   match clauses with
-  | [] -> first accu 
+  | [] -> let res = first accu in
+	if res=0 
+	then failwith "pas de littéral pur"
+	else res
   | a :: b -> aux_pur b (aux_aux_pur a accu)
 ;;
-
-let pur clauses =
+*)
+let pur clauses =(*
   aux_pur clauses []
+  *)
+  0
 ;;
   
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
