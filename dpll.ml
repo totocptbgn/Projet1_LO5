@@ -128,10 +128,8 @@ let rec aux_pur clauses accu =
   | a :: b -> aux_pur b (aux_aux_pur a accu)
 ;;
 
-let pur clauses =(*
+let pur clauses =
   aux_pur clauses []
-  *)
-  0
 ;;
   
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
