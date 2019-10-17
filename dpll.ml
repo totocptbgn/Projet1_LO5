@@ -4,9 +4,9 @@ open List
 
 (* filter_map : ('a -> 'b option) -> 'a list -> 'b list
    disponible depuis la version 4.08.0 de OCaml dans le module List :
-   pour chaque élément de `list', appliquer `filter' :
-   - si le résultat est `Some e', ajouter `e' au résultat ;
-   - si le résultat est `None', ne rien ajouter au résultat.
+   pour chaque élément de 'list', appliquer 'filter' :
+   - si le résultat est 'Some e', ajouter 'e' au résultat ;
+   - si le résultat est 'None', ne rien ajouter au résultat.
    Attention, cette implémentation inverse l'ordre de la liste *)
 
 let filter_map filter list =
@@ -45,23 +45,27 @@ let coloriage = [[1;2;3];[4;5;6];[7;8;9];[10;11;12];[13;14;15];[16;17;18];[19;20
 
 (********************************************************************)
 
-(* simplifie : int -> int list list -> int list list 
+(* simplifie : int -> int list list -> int list list
    applique la simplification de l'ensemble des clauses en mettant
    le littéral i à vrai *)
+let rec simplifiebis i clauses acc =
+match clauses with
+  [] -> acc
+  | a::b ->
+    if List.exists (fun x -> i=x) a then simplifiebis i b acc
+    else simplifiebis i b ((List.filter (fun x -> not (x= (-i)))  a)::acc);;
 
-let simplifie i clauses =
-  (* à compléter *)
-  []
+let simplifie i clauses = simplifiebis i clauses [];;
 
 (* solveur_split : int list list -> int list -> int list option
-   exemple d'utilisation de `simplifie' *)
+   exemple d'utilisation de 'simplifie' *)
 
 let rec solveur_split clauses interpretation =
   (* l'ensemble vide de clauses est satisfiable *)
   if clauses = [] then Some interpretation else
   (* un clause vide est insatisfiable *)
   if mem [] clauses then None else
-  (* branchement *) 
+  (* branchement *)
   let l = hd (hd clauses) in
   ou (solveur_split (simplifie l clauses) (l::interpretation))
      (solveur_split (simplifie (-l) clauses) ((-l)::interpretation))
@@ -72,31 +76,31 @@ let rec solveur_split clauses interpretation =
 (* let () = print_modele (solveur_split grammaire []) *)
 
 (* solveur dpll récursif *)
-    
+
 (* unitaire : int list list -> int
-    - si `clauses' contient au moins une clause unitaire, retourne
+    - si 'clauses' contient au moins une clause unitaire, retourne
       le littéral de cette clause unitaire ;
-    - sinon, lève une exception `Not_found' *)
+    - sinon, lève une exception 'Not_found' *)
 
 let rec unitaire clauses =
   match clauses with
   | [] -> Failure "Not_found"
-  | a :: tl -> 
+  | a :: tl ->
       match a with
         | [e] -> e
         | _ -> unitaire tl
 ;;
-    
+
 (* pur : int list list -> int
-    - si `clauses' contient au moins un littéral pur, retourne
+    - si 'clauses' contient au moins un littéral pur, retourne
       ce littéral ;
-    - sinon, lève une exception `Failure "pas de littéral pur"' *)
+    - sinon, lève une exception 'Failure "pas de littéral pur"' *)
 
 (* Fonction vérifiant l'égalité d'un in avec le premier élément d'un couples. *)
 (* Deprecated *)
 
-let eq a b =  
-  match (a,b) with 
+let eq a b =
+  match (a,b) with
     | (a, (n,_)) -> (a = n)
 ;;
 
@@ -104,7 +108,7 @@ let eq a b =
 où le bool est true *)
 
 
-let rec first l = 
+let rec first l =
   match l with
   | [] -> 0
   | (e, b) :: l -> if b then e else first l
@@ -119,11 +123,11 @@ let rec aux_aux_pur clause accu =
     else aux_aux_pur tl ((a, true) :: accu)
 ;;
 
-let rec aux_pur clauses accu = 
+let rec aux_pur clauses accu =
   match clauses with
   | [] -> let res = first accu in
-	if res=0 
-	then raise(Failure "pas de littéral pur")
+	if res=0
+	then raise(Failure "pas de litteral pur")
 	else res
   | a :: b -> aux_pur b (aux_aux_pur a accu)
 ;;
@@ -131,7 +135,7 @@ let rec aux_pur clauses accu =
 let pur clauses =
   aux_pur clauses []
 ;;
-  
+
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 
 let rec solveur_dpll_rec clauses interpretation =
