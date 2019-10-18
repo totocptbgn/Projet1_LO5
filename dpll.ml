@@ -48,14 +48,19 @@ let coloriage = [[1;2;3];[4;5;6];[7;8;9];[10;11;12];[13;14;15];[16;17;18];[19;20
 (* simplifie : int -> int list list -> int list list
    applique la simplification de l'ensemble des clauses en mettant
    le littéral i à vrai *)
-let rec simplifiebis i clauses acc =
-match clauses with
-  [] -> acc
-  | a::b ->
-    if List.exists (fun x -> i=x) a then simplifiebis i b acc
-    else simplifiebis i b ((List.filter (fun x -> not (x= (-i)))  a)::acc);;
 
-let simplifie i clauses = simplifiebis i clauses [];;
+let rec simplifiebis i clauses acc =
+  match clauses with
+    | [] -> acc
+    | a :: b ->
+      if List.exists (fun x -> i=x) a
+      then simplifiebis i b acc
+      else simplifiebis i b ((List.filter (fun x -> not (x = (-i))) a) :: acc)
+;;
+
+let simplifie i clauses = 
+  simplifiebis i clauses []
+;;
 
 (* solveur_split : int list list -> int list -> int list option
    exemple d'utilisation de 'simplifie' *)
@@ -84,7 +89,7 @@ let rec solveur_split clauses interpretation =
 
 let rec unitaire clauses =
   match clauses with
-  | [] -> Failure "Not_found"
+  | [] -> (* Failure "Not_found" *) 0
   | a :: tl ->
       match a with
         | [e] -> e
@@ -118,18 +123,22 @@ let rec aux_aux_pur clause accu =
   match clause with
   | [] -> accu
   | a :: tl ->
-    if List.exists (fun (n, b) -> a=n || a=(-n)) accu
+    if List.exists (fun (n, b) -> a = n || a = (-n)) accu
     then aux_aux_pur tl (List.map (fun (n, b) -> if n = -a then (n, false) else (n, b)) accu)
     else aux_aux_pur tl ((a, true) :: accu)
 ;;
 
 let rec aux_pur clauses accu =
   match clauses with
-  | [] -> let res = first accu in
-	if res=0
-	then raise(Failure "pas de litteral pur")
-	else res
-  | a :: b -> aux_pur b (aux_aux_pur a accu)
+    | [] ->
+      (*
+        let res = first accu in
+        if res = 0
+        then raise (Failure "pas de litteral pur")
+        else res
+      *)
+      first accu
+    | a :: b -> aux_pur b (aux_aux_pur a accu)
 ;;
 
 let pur clauses =
@@ -138,9 +147,42 @@ let pur clauses =
 
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 
+let rec hasAnEmptyClause clauses =
+  match clauses with
+  | [] -> false
+  | a :: tl ->
+    if a = []
+    then true
+    else hasAnEmptyClause tl
+;;
+
 let rec solveur_dpll_rec clauses interpretation =
-  (* à compléter *)
-  None
+  (* Recherche d'une clause vide *)
+  if hasAnEmptyClause clauses
+  then None
+  else
+
+  (* Vérification que clause n'est pas vide *)
+  if clauses = [] 
+  then Some (interpretation)
+  else 
+
+  (* Recherche des variables unitaires *)
+  let unit = unitaire clauses in
+  if unit != 0
+  then solveur_dpll_rec (simplifie unit clauses) (unit :: interpretation)
+  else
+
+  (* Recherche des variables pures *)
+  let pur = pur clauses in
+  if pur != 0
+  then solveur_dpll_rec (simplifie pur clauses) (pur :: interpretation)
+  else
+
+  (* Elimination des variables *)
+  let l = hd (hd clauses) in
+  ou (solveur_split (simplifie l clauses) (l::interpretation))
+     (solveur_split (simplifie (-l) clauses) ((-l)::interpretation))
 ;;
 
 (* tests *)
