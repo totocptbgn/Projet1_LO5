@@ -53,9 +53,9 @@ let rec simplifiebis i clauses acc =
   match clauses with
     | [] -> acc
     | a :: b ->
-      if List.exists (fun x -> i=x) a
+      if exists (fun x -> i=x) a
       then simplifiebis i b acc
-      else simplifiebis i b ((List.filter (fun x -> not (x = (-i))) a) :: acc)
+      else simplifiebis i b ((filter (fun x -> not (x = (-i))) a) :: acc)
 ;;
 
 let simplifie i clauses = 
@@ -96,22 +96,10 @@ let rec unitaire clauses =
         | _ -> unitaire tl
 ;;
 
-(* pur : int list list -> int
-    - si 'clauses' contient au moins un littéral pur, retourne
-      ce littéral ;
-    - sinon, lève une exception 'Failure "pas de littéral pur"' *)
+(* --- Fonctions auxiliaires à pur* --- *)
 
-(* Fonction vérifiant l'égalité d'un in avec le premier élément d'un couples. *)
-(* Deprecated *)
-
-let eq a b =
-  match (a,b) with
-    | (a, (n,_)) -> (a = n)
-;;
-
-(* Fonction renvoyant le premier élément d'une liste de couple (int * bool)
-où le bool est true *)
-
+(* Fonction renvoyant le premier élément d'une liste de couples (int * bool)
+où le bool est true ou 0 si la liste est vide *)
 
 let rec first l =
   match l with
@@ -119,14 +107,24 @@ let rec first l =
   | (e, b) :: l -> if b then e else first l
 ;;
 
+(* Prends en entrée une clause et une liste de couples (int * bool )
+et pour chaque variable :
+  - si elle est présente, on vérifie si elle est sous la forme v ou -v,
+    et si elle est sous une forme différente, on passe à false le booléen
+    correspondant
+  - si elle ne l'est pas, on ajoute un couple (variable, true) où variable
+    est ajoutée sous sa forme (soit v, soit -v) *)
+
 let rec aux_aux_pur clause accu =
   match clause with
   | [] -> accu
   | a :: tl ->
-    if List.exists (fun (n, b) -> a = n || a = (-n)) accu
-    then aux_aux_pur tl (List.map (fun (n, b) -> if n = -a then (n, false) else (n, b)) accu)
+    if exists (fun (n, b) -> a = n || a = (-n)) accu
+    then aux_aux_pur tl (map (fun (n, b) -> if n = -a then (n, false) else (n, b)) accu)
     else aux_aux_pur tl ((a, true) :: accu)
 ;;
+
+(* Appelle aux_aux_pur sur toutes les clauses, en transmettant l'accumulateur *)
 
 let rec aux_pur clauses accu =
   match clauses with
@@ -141,11 +139,20 @@ let rec aux_pur clauses accu =
     | a :: b -> aux_pur b (aux_aux_pur a accu)
 ;;
 
+(* pur : int list list -> int
+    - si 'clauses' contient au moins un littéral pur, retourne
+      ce littéral ;
+    - sinon, lève une exception 'Failure "pas de littéral pur"'
+      (modifié à renvoie 0 si aucun litteral pur, pour pouvoir
+      être utilisé par solveur_dpll_rec) *)
+
 let pur clauses =
   aux_pur clauses []
 ;;
 
-(* solveur_dpll_rec : int list list -> int list -> int list option *)
+(* --- Fonction auxiliaires à solveur_dpll_rec* --- *)
+
+(* Vérifie qu'aucune clauses ne soit vide *)
 
 let rec hasAnEmptyClause clauses =
   match clauses with
@@ -156,13 +163,15 @@ let rec hasAnEmptyClause clauses =
     else hasAnEmptyClause tl
 ;;
 
+(* solveur_dpll_rec : int list list -> int list -> int list option *)
+
 let rec solveur_dpll_rec clauses interpretation =
   (* Recherche d'une clause vide *)
   if hasAnEmptyClause clauses
   then None
   else
 
-  (* Vérification que clause n'est pas vide *)
+  (* Vérification que clauses n'est pas vide *)
   if clauses = [] 
   then Some (interpretation)
   else 
