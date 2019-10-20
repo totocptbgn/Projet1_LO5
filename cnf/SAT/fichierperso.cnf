@@ -1,5 +1,6 @@
 c   Fichier CNF test pour l'exercice 1 du TD 5 de LO5
 c   "Problème de Recouvrement"
+c 	proposition i : ligne i
 p cnf 6 22
 2 4 0
 -2 -4 0

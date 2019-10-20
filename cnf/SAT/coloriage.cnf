@@ -1,0 +1,73 @@
+c table des propositions
+c  WA,R WA,V WA,B NT,R NT,V NT,V SA,R SA,V SA,B QLD,R QLD,V QLD,B
+c  1    2    3    4    5    6    7    8    9    10    11    12
+c  NSW,R NSW,V NSW,B VIC,R VIC,V VIC,B TAS,R TAS,V TAS,B
+c  13    14    15    16    17    18    19    20    21
+p cnf 21 55
+c  au moins une couleur par sommet
+ 1  2  3 0
+ 4  5  6 0
+ 7  8  9 0
+10 11 12 0
+13 14 15 0
+16 17 18 0
+19 20 21 0
+c  au plus une couleur par sommet
+ -1  -2 0
+ -1  -3 0
+ -2  -3 0
+ -4  -5 0
+ -4  -6 0
+ -5  -6 0
+ -7  -8 0
+ -7  -9 0
+ -8  -9 0
+-10 -11 0
+-10 -12 0
+-11 -12 0
+-13 -14 0
+-13 -15 0
+-14 -15 0
+-16 -17 0
+-16 -18 0
+-17 -18 0
+-19 -20 0
+-19 -21 0
+-20 -21 0
+c  pas la mÃªme couleur sur deux sommets adjacents
+c  arÃªte (WA,NT)
+ -1  -4 0
+ -2  -5 0
+ -3  -6 0
+c  arÃªte (WA,SA)
+ -1  -7 0
+ -2  -8 0
+ -3  -9 0
+c  arÃªte (NT,SA)
+ -4  -7 0
+ -5  -8 0
+ -6  -9 0
+c  arÃªte (NT,QLD)
+ -4 -10 0
+ -5 -11 0
+ -6 -12 0
+c  arÃªte (SA,QLD)
+ -7 -10 0
+ -8 -11 0
+ -9 -12 0
+c  arÃªte (SA,NSW)
+ -7 -13 0
+ -8 -14 0
+ -9 -15 0
+c  arÃªte (SA,VIC)
+ -7 -16 0
+ -8 -17 0
+ -9 -18 0
+c  arÃªte (QLD,NSW)
+-10 -13 0
+-11 -14 0
+-12 -15 0
+c  arÃªte (NSW,VIC)
+-13 -16 0
+-14 -17 0
+-15 -18 0

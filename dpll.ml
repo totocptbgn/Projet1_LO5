@@ -195,7 +195,7 @@ let rec solveur_dpll_rec clauses interpretation =
 ;;
 
 (* tests *)
-let () = print_modele (solveur_dpll_rec accessibilite [])
+(* let () = print_modele (solveur_dpll_rec accessibilite []) *)
 (* let () = print_modele (solveur_dpll_rec coloriage []) *)
 (* let () = print_modele (solveur_dpll_rec grammaire []) *)
 
