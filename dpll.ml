@@ -58,7 +58,7 @@ let rec simplifiebis i clauses acc =
       else simplifiebis i b ((List.filter (fun x -> not (x = (-i))) a) :: acc)
 ;;
 
-let simplifie i clauses = 
+let simplifie i clauses =
   simplifiebis i clauses []
 ;;
 
@@ -163,9 +163,9 @@ let rec solveur_dpll_rec clauses interpretation =
   else
 
   (* Vérification que clause n'est pas vide *)
-  if clauses = [] 
+  if clauses = []
   then Some (interpretation)
-  else 
+  else
 
   (* Recherche des variables unitaires *)
   let unit = unitaire clauses in
@@ -186,7 +186,7 @@ let rec solveur_dpll_rec clauses interpretation =
 ;;
 
 (* tests *)
-(* let () = print_modele (solveur_dpll_rec accessibilite []) *)
+let () = print_modele (solveur_dpll_rec accessibilite []) 
 (* let () = print_modele (solveur_dpll_rec coloriage []) *)
 (* let () = print_modele (solveur_dpll_rec grammaire []) *)
 
