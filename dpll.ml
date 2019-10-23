@@ -49,6 +49,8 @@ let coloriage = [[1;2;3];[4;5;6];[7;8;9];[10;11;12];[13;14;15];[16;17;18];[19;20
    applique la simplification de l'ensemble des clauses en mettant
    le littéral i à vrai *)
 
+(*
+Version ultérieure
 let rec simplifiebis i clauses acc =
   match clauses with
     | [] -> acc
@@ -60,6 +62,19 @@ let rec simplifiebis i clauses acc =
 
 let simplifie i clauses =
   simplifiebis i clauses []
+;;
+*)
+
+let simplifie i clauses =
+  filter_map
+    (fun x ->
+      if exists (fun el -> i = el) x
+      then None
+      else Some (filter_map
+        (fun x' -> if x' = (-i) then None else Some x')
+      x)
+    )
+    clauses
 ;;
 
 (* solveur_split : int list list -> int list -> int list option
@@ -87,6 +102,7 @@ let rec solveur_split clauses interpretation =
       le littéral de cette clause unitaire ;
     - sinon, lève une exception 'Not_found' *)
 
+(* Version ultérieure
 let rec unitaire clauses =
   match clauses with
   | [] -> (* Failure "Not_found" *) 0
@@ -94,6 +110,15 @@ let rec unitaire clauses =
       match a with
         | [e] -> e
         | _ -> unitaire tl
+;;
+*)
+
+let unitaire clauses =
+  (hd
+    (find
+      (fun x -> length x = 1)
+    clauses)
+  )
 ;;
 
 (* --- Fonctions auxiliaires à pur* --- *)
@@ -103,9 +128,10 @@ où le bool est true ou 0 si la liste est vide *)
 
 let rec first l =
   match l with
-  | [] -> 0
+  | [] -> raise Not_found
   | (e, b) :: l -> if b then e else first l
 ;;
+
 
 (* Prends en entrée une clause et une liste de couples (int * bool )
 et pour chaque variable :
@@ -128,14 +154,10 @@ let rec aux_aux_pur clause accu =
 
 let rec aux_pur clauses accu =
   match clauses with
-    | [] ->
-      (*
-        let res = first accu in
-        if res = 0
-        then raise (Failure "pas de litteral pur")
-        else res
-      *)
-      first accu
+    | [] -> (*first accu*)
+      (match
+        find (fun (el,b) -> b) accu
+      with (el,b) -> el)
     | a :: b -> aux_pur b (aux_aux_pur a accu)
 ;;
 
@@ -143,8 +165,8 @@ let rec aux_pur clauses accu =
     - si 'clauses' contient au moins un littéral pur, retourne
       ce littéral ;
     - sinon, lève une exception 'Failure "pas de littéral pur"'
-      (modifié à renvoie 0 si aucun litteral pur, pour pouvoir
-      être utilisé par solveur_dpll_rec) *)
+*)
+
 
 let pur clauses =
   aux_pur clauses []
@@ -154,6 +176,7 @@ let pur clauses =
 
 (* Vérifie qu'aucune clauses ne soit vide *)
 
+(* Inutile
 let rec hasAnEmptyClause clauses =
   match clauses with
   | [] -> false
@@ -162,14 +185,17 @@ let rec hasAnEmptyClause clauses =
     then true
     else hasAnEmptyClause tl
 ;;
+*)
 
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 
+(* Version ultérieure
 let rec solveur_dpll_rec clauses interpretation =
   (* Recherche d'une clause vide *)
   if hasAnEmptyClause clauses
   then None
   else
+
 
   (* Vérification que clauses n'est pas vide *)
   if clauses = []
@@ -187,6 +213,40 @@ let rec solveur_dpll_rec clauses interpretation =
   if pur != 0
   then solveur_dpll_rec (simplifie pur clauses) (pur :: interpretation)
   else
+
+  (* Elimination des variables *)
+  let l = hd (hd clauses) in
+  ou (solveur_split (simplifie l clauses) (l::interpretation))
+     (solveur_split (simplifie (-l) clauses) ((-l)::interpretation))
+;;
+
+*)
+
+let rec solveur_dpll_rec clauses interpretation =
+  (* Recherche d'une clause vide *)
+  if exists (fun x -> x=[]) clauses
+  then None
+  else
+
+
+  (* Vérification que clauses n'est pas vide *)
+  if clauses = []
+  then Some (interpretation)
+  else
+
+  (* Recherche des variables unitaires *)
+  try
+    let literal = unitaire clauses in
+    solveur_dpll_rec (simplifie literal clauses) (literal :: interpretation)
+  with
+  | Not_found ->
+
+  (* Recherche des variables pures *)
+  try
+    let pur = pur clauses in
+    solveur_dpll_rec (simplifie pur clauses) (pur :: interpretation)
+  with
+  | Not_found ->
 
   (* Elimination des variables *)
   let l = hd (hd clauses) in
