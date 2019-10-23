@@ -126,12 +126,13 @@ let unitaire clauses =
 (* Fonction renvoyant le premier élément d'une liste de couples (int * bool)
 où le bool est true ou 0 si la liste est vide *)
 
+(*
 let rec first l =
   match l with
-  | [] -> raise Not_found
+  | [] -> raise 0
   | (e, b) :: l -> if b then e else first l
 ;;
-
+*)
 
 (* Prends en entrée une clause et une liste de couples (int * bool )
 et pour chaque variable :
@@ -164,7 +165,7 @@ let rec aux_pur clauses accu =
 (* pur : int list list -> int
     - si 'clauses' contient au moins un littéral pur, retourne
       ce littéral ;
-    - sinon, lève une exception 'Failure "pas de littéral pur"'
+    - sinon, lève une exception Not_found
 *)
 
 
