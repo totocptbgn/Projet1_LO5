@@ -104,17 +104,6 @@ let rec unitaire clauses =
 
 (* --- Fonctions auxiliaires à pur* --- *)
 
-(* Fonction renvoyant le premier élément d'une liste de couples (int * bool)
-où le bool est true ou 0 si la liste est vide *)
-
-(*
-let rec first l =
-  match l with
-  | [] -> raise 0
-  | (e, b) :: l -> if b then e else first l
-;;
-*)
-
 (**)
 (*
  pour chaque variable de liste :
