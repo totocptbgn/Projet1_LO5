@@ -1,6 +1,6 @@
 c sudoku exprimÃ© sous forme clausale
 c proposition ijk : ligne i, colonne j, valeur k
-c long
+c 
 p cnf 999 8845
 c  grille d'entrÃ©e
  263 0

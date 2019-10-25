@@ -55,6 +55,7 @@ let rec changeClause clause i accu =
 		then None
 		else if el = (-i)
 		then changeClause suite i accu
+    (* pour ameliorer complexité on peut supposer que un -i et pas de i si -i ce qui donne Some (clause@accu) *)
 		else changeClause suite i (el::accu)
 
 (* simplifie : int -> int list list -> int list list
@@ -92,95 +93,64 @@ let rec solveur_split clauses interpretation =
       le littéral de cette clause unitaire ;
     - sinon, lève une exception 'Not_found' *)
 
-
 let rec unitaire clauses =
   match clauses with
-  | [] -> raise Not_found
+  | [] -> None
   | a :: tl ->
       match a with
-        | [e] -> e
+        | [e] -> Some e
         | _ -> unitaire tl
 ;;
 
-(* --- Fonctions auxiliaires à pur* --- *)
+(* --- Fonctions auxiliaires à pur --- *)
 
-(**)
-(*
- pour chaque variable de liste :
-  - si i est dans accu on ne fait rien (on renvoie la liste telle quel)
-  - si -i est dans accu alors on sait que i n'est pas pur donc on met (a,false) dans la liste
-  - si elle ne l'est pas, on ajoute un couple (i, true)
-*)
-
-let rec search liste accu i =
-	match liste with
-	| [] -> (i,true)::accu
-	| (a,b)::suite ->
-		if a = i || ((a = (-i)) && (not b))
-		then raise Not_found
-		else if a = (-i)
-		then (a,false)::(accu@suite)
-		else search suite ((a,b)::accu) i
-;;
-(* Prends en entrée une clause et une liste de couples (int * bool )
-et applique search sur chaque variable *)
-
-let rec aux_aux_pur clause accu =
-  match clause with
-  | [] -> accu
-  | a :: tl ->
-    try aux_aux_pur tl (search accu [] a)
-    with Not_found -> aux_aux_pur tl accu
-;;
-
-(* Appelle aux_aux_pur sur toutes les clauses, en transmettant l'accumulateur *)
-
-let rec aux_pur clauses accu =
+let rec aux_pur clauses =
   match clauses with
-    | [] ->
-      (match
-        find (fun (el,b) -> b) accu
-      with (el,b) -> el)
-    | a :: b -> aux_pur b (aux_aux_pur a accu)
+  | [] -> None
+  | [a] -> Some a
+  | a::b::reste -> if a != (-b) then Some a else aux_pur reste
 ;;
-
-(* pur : int list list -> int
-    - si 'clauses' contient au moins un littéral pur, retourne
-      ce littéral ;
-    - sinon, lève une exception Not_found
-*)
 
 let pur clauses =
-  aux_pur clauses []
+  let la = sort_uniq
+    (fun x y->
+      if x = y then 0
+      else
+      if x = (-y) then
+        if x > y then 1 else -1
+      else
+        let x = if x > 0 then x else -x in
+        let y = if y > 0 then y else -y in
+        if x > y then 1 else -1)
+  (flatten clauses)
+  in aux_pur la
 ;;
 
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 
 let rec solveur_dpll_rec clauses interpretation =
+  (* Printf.eprintf "%d %d\n" (List.length clauses) (List.length interpretation); *)
   (* Recherche d'une clause vide *)
-  if exists (fun x -> x=[]) clauses
+  if mem [] clauses
   then None
   else
 
-
   (* Vérification que clauses n'est pas vide *)
-  if clauses = []
-  then Some (interpretation)
-  else
+  match clauses with
+  | [] -> Some (interpretation)
+  | _ ->
 
   (* Recherche des variables unitaires *)
-  try
-    let literal = unitaire clauses in
-    solveur_dpll_rec (simplifie literal clauses) (literal :: interpretation)
-  with
-  | Not_found ->
+  let literal = unitaire clauses in
+  match literal with
+  | Some literal -> solveur_dpll_rec (simplifie literal clauses) (literal :: interpretation)
+  | None -> 
 
   (* Recherche des variables pures *)
-  try
-    let pur = pur clauses in
-    solveur_dpll_rec (simplifie pur clauses) (pur :: interpretation)
-  with
-  | Not_found ->
+  let pur = pur clauses in
+  match pur with
+  | Some pur -> solveur_dpll_rec (simplifie pur clauses) (pur :: interpretation)
+  | None ->
 
   (* Elimination des variables *)
   let l = hd (hd clauses) in
