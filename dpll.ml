@@ -116,7 +116,7 @@ let rec search liste accu i =
 	match liste with
 	| [] -> (i,true)::accu
 	| (a,b)::suite ->
-		if a = i
+		if a = i || ((a = (-i)) && (not b))
 		then raise Not_found
 		else if a = (-i)
 		then (a,false)::(accu@suite)
